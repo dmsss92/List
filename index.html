@@ -5,30 +5,17 @@
 <title>School Committees</title>
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="School committees, staff and governing bodies">
-
-<!-- ===== SCHEMA.ORG ===== -->
-<script type="application/ld+json" id="schema">
-{
-  "@context": "https://schema.org",
-  "@type": "EducationalOrganization",
-  "name": "DAV Public School, Delhi",
-  "url": "https://davschool.github.io"
-}
-</script>
+<meta name="description" content="School committees and staff information">
 
 <style>
-/* ===== RESET ===== */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ===== BASE ===== */
 body {
   font-family: Arial, sans-serif;
   background: #f4f6f8;
   color: #222;
 }
 
-/* ===== LAYOUT ===== */
 .app {
   display: flex;
   min-height: 100vh;
@@ -43,12 +30,6 @@ body {
   position: sticky;
   top: 0;
   height: 100vh;
-}
-
-.sidebar img {
-  width: 80px;
-  display: block;
-  margin: 0 auto 10px;
 }
 
 .sidebar h2 {
@@ -77,6 +58,21 @@ body {
 .main {
   flex: 1;
   padding: 15px;
+  position: relative;
+}
+
+/* ===== HOME IMAGE ===== */
+.home-bg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 40px);
+}
+
+.home-bg img {
+  max-width: 90%;
+  max-height: 90%;
+  opacity: 0.05;
 }
 
 /* ===== BREADCRUMB ===== */
@@ -179,8 +175,6 @@ footer {
     position: relative;
   }
 
-  .sidebar img { display: none; }
-
   .sidebar a {
     flex: 1;
     margin-right: 6px;
@@ -197,8 +191,8 @@ footer {
 
   <!-- SIDEBAR -->
   <div class="sidebar">
-    <img src="logo.png" alt="School Logo">
     <h2>School Panels</h2>
+    <a href="#home" class="nav">Home</a>
     <a href="#society" class="nav">Society</a>
     <a href="#smc" class="nav">SMC</a>
     <a href="#pta-ec" class="nav">PTA (EC)</a>
@@ -212,11 +206,15 @@ footer {
     <nav class="breadcrumb" id="breadcrumb"></nav>
     <div class="page-title" id="title"></div>
     <div class="meta" id="updated"></div>
-    <input class="search" id="search" placeholder="🔍 Search..." oninput="render()">
+
+    <input class="search" id="search"
+      placeholder="🔍 Search by name or role"
+      oninput="render()">
+
     <div id="output"></div>
 
     <footer>
-      © 2025 DAV Public School | All Rights Reserved
+      © 2025 School Committee Portal
     </footer>
   </div>
 
@@ -227,6 +225,7 @@ const API =
 "https://script.google.com/macros/s/AKfycbxOFSRqTTQ_BpkhWIJmNLKpU3DfdS13tXGYfcxhaVuMVwOTqNjqS8mvMuikCwz-0ffk/exec";
 
 const ROUTES = {
+  "home": "HOME",
   "society": "Society",
   "smc": "SMC",
   "pta-ec": "PTA (EC)",
@@ -238,34 +237,46 @@ const ROUTES = {
 let rawData = [];
 let currentSheet = "";
 
-/* ROUTING */
 function handleRoute() {
-  const hash = location.hash.replace("#", "") || "society";
-  currentSheet = ROUTES[hash] || "Society";
-
-  document.title = currentSheet + " | School Committees";
-  document.getElementById("title").innerText = currentSheet + " (2025–26)";
+  const hash = location.hash.replace("#", "") || "home";
+  currentSheet = ROUTES[hash] || "HOME";
 
   document.querySelectorAll(".nav")
     .forEach(a => a.classList.remove("active"));
   const active = document.querySelector(`a[href="#${hash}"]`);
   if (active) active.classList.add("active");
 
+  if (hash === "home") {
+    document.title = "Home | School Committees";
+    document.getElementById("breadcrumb").innerHTML =
+      `<a href="#">Home</a>`;
+    document.getElementById("title").innerText = "";
+    document.getElementById("updated").innerText = "";
+    document.getElementById("search").style.display = "none";
+    document.getElementById("output").innerHTML =
+      `<div class="home-bg">
+        <img src="saraswati.jpg" alt="Saraswati Devi">
+       </div>`;
+    return;
+  }
+
+  document.getElementById("search").style.display = "block";
+  document.title = currentSheet + " | School Committees";
+  document.getElementById("title").innerText = currentSheet;
+
   document.getElementById("breadcrumb").innerHTML =
-    `<a href="#">Home</a><span>›</span><span>${currentSheet}</span>`;
+    `<a href="#home">Home</a><span>›</span><span>${currentSheet}</span>`;
 
   loadSheet();
 }
 
 window.addEventListener("hashchange", handleRoute);
 
-/* LOAD DATA WITH CACHE */
 function loadSheet() {
   const cacheKey = "sheet_" + currentSheet;
   const cached = localStorage.getItem(cacheKey);
 
-  document.getElementById("output").innerHTML =
-    "<div class='loader'>Loading…</div>";
+  output.innerHTML = "<div class='loader'>Loading…</div>";
 
   if (cached) {
     rawData = JSON.parse(cached);
@@ -283,15 +294,14 @@ function loadSheet() {
     });
 }
 
-/* RENDER */
 function render() {
-  const q = document.getElementById("search").value.toLowerCase();
+  const q = search.value.toLowerCase();
   const data = rawData.filter(r =>
     Object.values(r).join(" ").toLowerCase().includes(q)
   );
 
   if (!data.length) {
-    output.innerHTML = "<p>No data available</p>";
+    output.innerHTML = "<p>No data found</p>";
     return;
   }
 
@@ -304,7 +314,7 @@ function render() {
 
 function renderTable(data) {
   let html = "<table><tr>";
-  Object.keys(data[0]).forEach(h => html += `<th scope="col">${h}</th>`);
+  Object.keys(data[0]).forEach(h => html += `<th>${h}</th>`);
   html += "</tr>";
 
   data.forEach(r => {
@@ -330,10 +340,8 @@ function renderCards(data) {
   output.innerHTML = html;
 }
 
-/* INIT */
 handleRoute();
 </script>
 
 </body>
 </html>
-
