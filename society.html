@@ -2,206 +2,145 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Committee Members</title>
+<title>School Committee</title>
 
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f8;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: #eef2f6;
+    margin: 0;
     padding: 20px;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: #ffffff;
+.container {
+    max-width: 1200px;
+    margin: auto;
 }
 
-caption {
-    font-size: 22px;
-    font-weight: bold;
-    margin-bottom: 12px;
-}
-
-th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
+h1 {
     text-align: center;
+    color: #1f3c88;
+    margin-bottom: 15px;
 }
 
-th {
-    background-color: #2c3e50;
-    color: #fff;
+.filter {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+select {
+    padding: 8px 14px;
+    font-size: 16px;
+    border-radius: 6px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-top: 6px solid #1f3c88;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.role {
+    font-weight: bold;
+    color: #1f3c88;
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.name {
+    font-size: 16px;
+    color: #333;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #666;
+    font-size: 14px;
 }
 </style>
 </head>
 
 <body>
 
-<table id="sheetTable">
-    <caption>Committee Details – 2025</caption>
-</table>
+<div class="container">
+    <h1>School Managing Committee</h1>
+
+    <div class="filter">
+        <label><strong>Select Year:</strong></label>
+        <select id="yearSelect"></select>
+    </div>
+
+    <div class="cards" id="cards"></div>
+
+    <div class="footer">
+        © School Committee Portal
+    </div>
+</div>
 
 <script>
 const apiUrl = "https://script.google.com/macros/s/AKfycbzv9pGwD4qlGhlftt2Bwz_au7qGIvaFQo8E3piyzntk0GRO_ciDoNC0VP76ION8uW0/exec";
 
+let sheetData = [];
+
 fetch(apiUrl)
   .then(res => res.json())
   .then(data => {
-    const table = document.getElementById("sheetTable");
-
-    // Clear table
-    table.innerHTML = "<caption>Committee Details – 2025</caption>";
-
-    // Headers
-    const headers = Object.keys(data[0]);
-    let headerRow = "<tr>";
-    headers.forEach(h => headerRow += `<th>${h}</th>`);
-    headerRow += "</tr>";
-    table.innerHTML += headerRow;
-
-    // Rows
-    data.forEach(row => {
-      let tr = "<tr>";
-      headers.forEach(h => {
-        tr += `<td>${row[h] || ""}</td>`;
-      });
-      tr += "</tr>";
-      table.innerHTML += tr;
-    });
+    sheetData = data;
+    populateYears();
   })
   .catch(err => console.error("API Error:", err));
+
+function populateYears() {
+    const yearSelect = document.getElementById("yearSelect");
+
+    const years = sheetData.map(r => r.Designation); // year column
+    years.forEach(y => {
+        const opt = document.createElement("option");
+        opt.value = y;
+        opt.textContent = y;
+        yearSelect.appendChild(opt);
+    });
+
+    yearSelect.addEventListener("change", () => {
+        renderCards(yearSelect.value);
+    });
+
+    renderCards(years[0]);
+}
+
+function renderCards(year) {
+    const container = document.getElementById("cards");
+    container.innerHTML = "";
+
+    const row = sheetData.find(r => r.Designation == year);
+    if (!row) return;
+
+    Object.keys(row).forEach(key => {
+        if (key !== "Designation" && row[key]) {
+            container.innerHTML += `
+                <div class="card">
+                    <div class="role">${key}</div>
+                    <div class="name">${row[key]}</div>
+                </div>
+            `;
+        }
+    });
+}
 </script>
-
-
-
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-https://script.google.com/macros/s/AKfycbzv9pGwD4qlGhlftt2Bwz_au7qGIvaFQo8E3piyzntk0GRO_ciDoNC0VP76ION8uW0/exec
